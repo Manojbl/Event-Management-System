@@ -1,0 +1,3 @@
+.env
+event-backend/.env
+node_modules/
