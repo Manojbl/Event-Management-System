@@ -43,7 +43,6 @@ exports.getMyBookings = async (req, res) => {
     const bookings = await Booking.find({ user: req.user._id })
       .populate("event")
       .sort({ createdAt: -1 });
-
     res.status(200).json({
       count: bookings.length,
       bookings,

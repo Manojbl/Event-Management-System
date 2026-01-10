@@ -2,7 +2,9 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-/* REGISTER */
+/* =========================
+   REGISTER USER
+   ========================= */
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -18,27 +20,32 @@ exports.register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      role: "user", // default role
     });
 
-    res.status(201).json({ message: "User registered successfully" });
+    res.status(201).json({
+      message: "User registered successfully",
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 };
 
-/* LOGIN */
+/* =========================
+   LOGIN USER (FIXED)
+   ========================= */
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid password" });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
     const token = jwt.sign(
@@ -47,7 +54,16 @@ exports.login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.json({ token });
+    // ✅ SEND USER DATA ALSO
+    res.json({
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }

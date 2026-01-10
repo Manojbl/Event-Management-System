@@ -11,6 +11,6 @@ const {
 router.post("/", protect, bookEvent);
 
 // USER: view my bookings
-router.get("/my", protect, getMyBookings);
+router.get("/my-bookings", protect, getMyBookings);
 
 module.exports = router;

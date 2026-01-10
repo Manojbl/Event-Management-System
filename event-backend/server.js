@@ -31,7 +31,7 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/events", require("./routes/eventRoutes"));
 app.use("/api/bookings", require("./routes/bookingRoutes"));
 app.use("/api/payments", require("./routes/paymentRoutes"));
-
+app.use("/api/admin", require("./routes/adminRoutes"));
 /* =======================
    START SERVER
    ======================= */
