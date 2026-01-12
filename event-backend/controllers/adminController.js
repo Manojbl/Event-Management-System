@@ -9,12 +9,17 @@ exports.getDashboardStats = async (req, res) => {
     const totalEvents = await Event.countDocuments();
     const totalBookings = await Booking.countDocuments();
 
-    const revenueAgg = await Booking.aggregate([
-      { $match: { paymentStatus: "paid" } },
-      { $group: { _id: null, total: { $sum: "$eventPrice" } } },
-    ]);
+    // ✅ FIXED REVENUE CALCULATION
+    const paidBookings = await Booking.find({
+      paymentStatus: "paid",
+    }).populate("event", "price");
 
-    const revenue = revenueAgg.length ? revenueAgg[0].total : 0;
+    let revenue = 0;
+    paidBookings.forEach((b) => {
+      if (b.event && b.event.price) {
+        revenue += b.event.price;
+      }
+    });
 
     const upcomingEvents = await Event.countDocuments({
       date: { $gte: new Date() },
@@ -27,6 +32,7 @@ exports.getDashboardStats = async (req, res) => {
       upcomingEvents,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Admin stats failed" });
   }
 };
