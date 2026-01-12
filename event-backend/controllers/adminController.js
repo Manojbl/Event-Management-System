@@ -62,3 +62,46 @@ exports.getEventBookings = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch event bookings" });
   }
 };
+
+/* =========================
+   EVENT PERFORMANCE (ADMIN)
+========================= */
+exports.getEventPerformance = async (req, res) => {
+  try {
+    const events = await Event.find();
+
+    const performance = await Promise.all(
+      events.map(async (event) => {
+        const bookings = await Booking.find({
+          event: event._id,
+          paymentStatus: "paid",
+        });
+
+        const totalBookings = bookings.length;
+
+        const revenue = bookings.reduce(
+          (sum, b) => sum + (b.eventPrice ?? event.price ?? 0),
+          0
+        );
+
+        let status = "No Sales";
+        if (totalBookings >= 5) status = "High Demand";
+        else if (totalBookings > 0) status = "Low Demand";
+
+        return {
+          _id: event._id,
+          title: event.title,
+          location: event.location,
+          totalBookings,
+          revenue,
+          status,
+        };
+      })
+    );
+
+    res.json({ performance });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to load event performance" });
+  }
+};

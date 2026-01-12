@@ -7,6 +7,7 @@ const { adminOnly } = require("../middleware/adminMiddleware");
 const {
   getDashboardStats,
   getEventBookings,
+  getEventPerformance,
 } = require("../controllers/adminController");
 
 // dashboard stats
@@ -19,5 +20,6 @@ router.get(
   adminOnly,
   getEventBookings
 );
+router.get("/event-performance", protect, adminOnly, getEventPerformance);
 
 module.exports = router;
