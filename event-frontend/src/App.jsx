@@ -6,20 +6,21 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 
 /* USER PAGES */
-import Events from "./pages/UserEvents";
-import MyBookings from "./pages/UserBookings";
+import Events from "./pages/user/UserEvents";
+import MyBookings from "./pages/user/UserBookings";
 
 /* ADMIN PAGES */
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminEvents from "./pages/AdminEvents";
-import AdminEventBookings from "./pages/AdminEventBookings";
-import AdminCreateEvent from "./pages/AdminCreateEvents";
-import AdminEditEvent from "./pages/AdminEditEvent";
-import AdminEventScan from "./pages/AdminEventScan";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminEvents from "./pages/admin/AdminEvents";
+import AdminEventBookings from "./pages/admin/AdminEventBookings";
+import AdminCreateEvent from "./pages/admin/AdminCreateEvents";
+import AdminEditEvent from "./pages/admin/AdminEditEvent";
+import AdminEventScan from "./pages/admin/AdminEventScan";
 
 /* NAVBARS */
 import UserNavbar from "./components/UserNavbar";
 import AdminNavbar from "./components/AdminNavbar";
+import UserHostedEvents from "./pages/user/UserHostedEvents";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -80,6 +81,12 @@ function App() {
       <Routes>
         <Route path="/events" element={<Events />} />
         <Route path="/my-bookings" element={<MyBookings />} />
+        <Route path="/host/create-event" element={<AdminCreateEvent />} />
+        <Route path="/host/events" element={<UserHostedEvents />} />
+        <Route path="/host/events/:eventId/bookings" element={<AdminEventBookings />} />
+        <Route path="/host/events/:eventId/scan" element={<AdminEventScan />} />
+        <Route path="/host/events/edit/:id" element={<AdminEditEvent />} />
+        <Route path="*" element={<Navigate to="/events" />} />
       </Routes>
     </BrowserRouter>
   );

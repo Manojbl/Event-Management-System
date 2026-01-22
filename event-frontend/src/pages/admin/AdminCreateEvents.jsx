@@ -1,5 +1,5 @@
 import { useState } from "react";
-import API from "../api/api";
+import API from "../../api/api";
 
 function AdminCreateEvent() {
   const [title, setTitle] = useState("");
@@ -15,7 +15,7 @@ function AdminCreateEvent() {
     setLoading(true);
 
     try {
-      await API.post("/events/create", {
+      await API.post("/events", {
         title,
         description,
         location,

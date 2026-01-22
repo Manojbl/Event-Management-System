@@ -1,4 +1,4 @@
-import AdminStats from "../components/AdminStats";
+import AdminStats from "../../components/AdminStats";
 function AdminDashboard() {
   return (
     <div style={styles.container}>

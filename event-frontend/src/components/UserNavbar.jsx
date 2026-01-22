@@ -16,6 +16,8 @@ function UserNavbar() {
       <div style={styles.links}>
         <Link to="/events" style={styles.link}>Events</Link>
         <Link to="/my-bookings" style={styles.link}>My Bookings</Link>
+        <Link to="/host/events" style={styles.link}>My Hosted Events</Link>
+        <Link to="/host/create-event" style={styles.link}>Host Event</Link>
         <button onClick={logout} style={styles.logout}>Logout</button>
       </div>
     </nav>

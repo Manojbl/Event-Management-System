@@ -3,27 +3,22 @@ const router = express.Router();
 
 const { protect } = require("../middleware/authMiddleware");
 const { adminOnly } = require("../middleware/adminMiddleware");
+const { eventOwnerOrAdmin } = require("../middleware/eventPermissions");
 
 const {
   getDashboardStats,
   getEventBookings,
-  getEventPerformance,
-  scanQrCheckIn,
 } = require("../controllers/adminController");
 
-// dashboard stats
+/* DASHBOARD */
 router.get("/dashboard-stats", protect, adminOnly, getDashboardStats);
 
-// ✅ EVENT BOOKINGS (THIS WAS MISSING)
+/* ADMIN + EVENT OWNER */
 router.get(
   "/events/:eventId/bookings",
   protect,
-  adminOnly,
+  eventOwnerOrAdmin,
   getEventBookings
 );
-console.log("adminOnly", adminOnly);
-console.log("scanQrCheckIn", typeof scanQrCheckIn);
-router.get("/event-performance", protect, adminOnly, getEventPerformance);
-router.post("/scan-qr", protect, adminOnly, scanQrCheckIn);
 
 module.exports = router;
