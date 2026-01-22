@@ -7,6 +7,7 @@ function AdminCreateEvent() {
   const [location, setLocation] = useState("");
   const [date, setDate] = useState("");
   const [price, setPrice] = useState("");
+  const [capacity, setCapacity] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleCreateEvent = async (e) => {
@@ -20,6 +21,7 @@ function AdminCreateEvent() {
         location,
         date,
         price,
+        capacity,
       });
 
       alert("Event created successfully ✅");
@@ -30,6 +32,7 @@ function AdminCreateEvent() {
       setLocation("");
       setDate("");
       setPrice("");
+      setCapacity("");
     } catch (err) {
       console.error("CREATE EVENT ERROR:", err.response?.data || err.message);
       alert(err.response?.data?.message || "Failed to create event ❌");
@@ -85,6 +88,15 @@ function AdminCreateEvent() {
           onChange={(e) => setPrice(e.target.value)}
           style={{ width: "100%", padding: 8, marginBottom: 15 }}
         />
+
+        <input
+          type="number"
+          placeholder="Capacity"
+          value={capacity}
+          required
+          onChange={(e) => setCapacity(e.target.value)}
+          style={{ width: "100%", padding: 8, marginBottom: 15 }}
+        />  
 
         <button
           type="submit"

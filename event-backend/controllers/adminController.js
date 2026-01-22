@@ -105,3 +105,39 @@ exports.getEventPerformance = async (req, res) => {
     res.status(500).json({ message: "Failed to load event performance" });
   }
 };
+
+
+exports.scanQrCheckIn = async (req, res) => {
+  try {
+    let { bookingId } = req.body;
+
+    // QR may contain JSON
+    if (typeof bookingId === "string" && bookingId.startsWith("{")) {
+      bookingId = JSON.parse(bookingId).bookingId;
+    }
+
+    if (!bookingId || bookingId.length !== 24) {
+      return res.status(400).json({ message: "Invalid QR code" });
+    }
+
+    const booking = await Booking.findById(bookingId).populate("event");
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.checkedIn) {
+      return res.status(400).json({ message: "Ticket already used" });
+    }
+
+    booking.checkedIn = true;
+    booking.status = "checked-in";
+    booking.checkedInAt = new Date();
+    await booking.save();
+
+    res.json({ message: "✅ Entry allowed" });
+  } catch (err) {
+    console.error("SCAN ERROR:", err);
+    res.status(500).json({ message: "QR scan failed" });
+  }
+};

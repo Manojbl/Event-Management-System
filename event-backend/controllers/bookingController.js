@@ -19,11 +19,16 @@ exports.bookEvent = async (req, res) => {
         message: "Event not found",
       });
     }
-
+    if(event.bookedSeats >= event.capaity){
+      return res.status(400).json({
+        message: "Event is fully booked",
+      });
+    }
     // Create booking
     const booking = await Booking.create({
       user: req.user._id,
       event: eventId,
+      eventPrice: event.price,
     });
 
     res.status(201).json({

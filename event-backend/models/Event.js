@@ -26,6 +26,14 @@ const eventSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    capacity:{
+      type: Number,
+      required: true,
+    },
+    bookedSeats:{
+      type: Number,
+      default: 0,
+    },
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

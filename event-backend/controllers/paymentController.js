@@ -1,11 +1,27 @@
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Booking = require("../models/Booking");
+const Event = require("../models/Event");
+const QRCode = require("qrcode");
+const nodemailer = require("nodemailer");
 
-// ✅ Razorpay instance
+// ================================
+// RAZORPAY INSTANCE
+// ================================
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+// ================================
+// EMAIL TRANSPORTER
+// ================================
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 // ================================
@@ -15,14 +31,12 @@ exports.createPaymentOrder = async (req, res) => {
   try {
     const { bookingId, amount } = req.body;
 
-    // 1️⃣ Validate input
     if (!bookingId || !amount) {
       return res.status(400).json({
         message: "Booking ID and amount are required",
       });
     }
 
-    // 2️⃣ Find booking
     const booking = await Booking.findById(bookingId);
     if (!booking) {
       return res.status(404).json({
@@ -30,27 +44,23 @@ exports.createPaymentOrder = async (req, res) => {
       });
     }
 
-    // 3️⃣ (IMPORTANT) Ensure same user is paying
     if (booking.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         message: "You are not authorized to pay for this booking",
       });
     }
 
-    // 4️⃣ Create Razorpay order
     const options = {
-      amount: amount * 100, // rupees → paise
+      amount: amount * 100,
       currency: "INR",
       receipt: `booking_${bookingId}`,
     };
 
     const order = await razorpay.orders.create(options);
 
-    // 5️⃣ Save Razorpay order ID in booking
     booking.razorpayOrderId = order.id;
     await booking.save();
 
-    // 6️⃣ Send response to frontend
     res.status(200).json({
       success: true,
       orderId: order.id,
@@ -60,7 +70,6 @@ exports.createPaymentOrder = async (req, res) => {
     });
   } catch (error) {
     console.error("CREATE ORDER ERROR:", error);
-
     res.status(500).json({
       message: "Payment order creation failed",
       error: error.message,
@@ -69,7 +78,7 @@ exports.createPaymentOrder = async (req, res) => {
 };
 
 // ================================
-// VERIFY PAYMENT
+// VERIFY PAYMENT + EMAIL TICKET
 // ================================
 exports.verifyPayment = async (req, res) => {
   try {
@@ -80,7 +89,6 @@ exports.verifyPayment = async (req, res) => {
       bookingId,
     } = req.body;
 
-    // 1️⃣ Validate input
     if (
       !razorpay_order_id ||
       !razorpay_payment_id ||
@@ -92,20 +100,18 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
-    // 2️⃣ Generate signature
     const generatedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    // 3️⃣ Compare signatures
     if (generatedSignature !== razorpay_signature) {
       return res.status(400).json({
         message: "Invalid payment signature",
       });
     }
 
-    // 4️⃣ Update booking as PAID
+    // Update booking as PAID
     const booking = await Booking.findByIdAndUpdate(
       bookingId,
       {
@@ -115,14 +121,57 @@ exports.verifyPayment = async (req, res) => {
       { new: true }
     );
 
+    // Increment booked seats
+    await Event.findByIdAndUpdate(
+      booking.event,
+      { $inc: { bookedSeats: 1 } },
+      { new: true }
+    );
+
+    // ================================
+    // QR CODE + EMAIL TICKET
+    // ================================
+    const event = await Event.findById(booking.event).populate("createdBy");
+
+    const qrBuffer = await QRCode.toBuffer(booking._id.toString());
+    
+   
+    await transporter.sendMail({
+  from: `"Eventify" <${process.env.EMAIL_USER}>`,
+  to: req.user.email,
+  subject: "🎟 Your Event Ticket - Eventify",
+  html: `
+    <h2>Booking Confirmed 🎉</h2>
+
+    <p><b>Event:</b> ${event.title}</p>
+    <p><b>Location:</b> ${event.location}</p>
+    <p><b>Date:</b> ${new Date(event.date).toDateString()}</p>
+    <p><b>Price:</b> ₹${event.price}</p>
+
+    <p><b>Show this QR code at entry:</b></p>
+    <img src="cid:ticketqr" width="200" />
+
+    <p><b>Booking ID:</b> ${booking._id}</p>
+
+    <br/>
+    <p>Thank you for booking with <b>Eventify</b> 🚀</p>
+  `,
+  attachments: [
+    {
+      filename: "ticket-qr.png",
+      content: qrBuffer,
+      cid: "ticketqr", // 🔥 MUST MATCH img src
+    },
+  ],
+});
+
     res.status(200).json({
       success: true,
-      message: "Payment verified successfully",
+      message: "Payment verified & ticket emailed successfully",
       booking,
     });
   } catch (error) {
     console.error("VERIFY PAYMENT ERROR:", error);
-
     res.status(500).json({
       message: "Payment verification failed",
       error: error.message,

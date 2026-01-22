@@ -15,6 +15,7 @@ import AdminEvents from "./pages/AdminEvents";
 import AdminEventBookings from "./pages/AdminEventBookings";
 import AdminCreateEvent from "./pages/AdminCreateEvents";
 import AdminEditEvent from "./pages/AdminEditEvent";
+import AdminEventScan from "./pages/AdminEventScan";
 
 /* NAVBARS */
 import UserNavbar from "./components/UserNavbar";
@@ -57,7 +58,7 @@ function App() {
       <BrowserRouter>
         <AdminNavbar />
         <Routes>
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/events" element={<AdminEvents />} />
           <Route
             path="/admin/events/:eventId/bookings"
@@ -65,6 +66,8 @@ function App() {
           />
           <Route path="/admin/create-event" element={<AdminCreateEvent />} />
           <Route path="/admin/events/edit/:id" element={<AdminEditEvent />} />
+          <Route path="/admin/events/:eventId/scan" element={<AdminEventScan />} />
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" />} />
         </Routes>
       </BrowserRouter>
     );

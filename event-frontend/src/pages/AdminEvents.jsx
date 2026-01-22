@@ -78,6 +78,12 @@ function AdminEvents() {
             >
               Delete
             </button>
+            <button
+            onClick={() => navigate(`/admin/events/${event._id}/scan`)}
+            style={scanBtn}
+          >
+            🎫 Scan Tickets
+          </button>
           </div>
         </div>
       ))}
@@ -99,4 +105,13 @@ const btnGroup = {
   display: "flex",
   gap: "10px",
   marginTop: "10px",
+};
+
+const scanBtn = {
+  padding: "6px 12px",
+  background: "#111827",
+  color: "#fff",
+  borderRadius: "6px",
+  border: "none",
+  cursor: "pointer",
 };

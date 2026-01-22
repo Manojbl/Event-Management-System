@@ -8,6 +8,7 @@ const {
   getDashboardStats,
   getEventBookings,
   getEventPerformance,
+  scanQrCheckIn,
 } = require("../controllers/adminController");
 
 // dashboard stats
@@ -20,6 +21,9 @@ router.get(
   adminOnly,
   getEventBookings
 );
+console.log("adminOnly", adminOnly);
+console.log("scanQrCheckIn", typeof scanQrCheckIn);
 router.get("/event-performance", protect, adminOnly, getEventPerformance);
+router.post("/scan-qr", protect, adminOnly, scanQrCheckIn);
 
 module.exports = router;

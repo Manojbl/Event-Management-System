@@ -6,6 +6,7 @@ function UserEvents() {
   const [bookedEventIds, setBookedEventIds] = useState(new Set());
   const [loading, setLoading] = useState(false);
 
+
   useEffect(() => {
     fetchEventsAndBookings();
   }, []);
@@ -113,9 +114,29 @@ function UserEvents() {
               <h3>{event.title}</h3>
               <p><b>Location:</b> {event.location}</p>
               <p><b>Price:</b> ₹{event.price}</p>
+              <p>
+                <b>Seats Remaining:</b>{" "}
+                <span
+                  style={{
+                    color:
+                      event.capacity - event.bookedSeats <= 0
+                        ? "red"
+                        : event.capacity - event.bookedSeats <= 3
+                        ? "orange"
+                        : "green",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {event.capacity - event.bookedSeats}
+                </span>
+              </p>
 
               {isBooked ? (
                 <span style={bookedBadge}>BOOKED</span>
+              ) : event.bookedSeats >= event.capacity ? (
+                <span style={{ ...bookedBadge, backgroundColor: "red" }}>
+                  FULLY BOOKED
+                </span>
               ) : (
                 <button
                   onClick={() => handleBook(event._id, event.price)}
