@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { protect } = require("../middleware/authMiddleware");
 const { eventOwnerOrAdmin } = require("../middleware/eventPermissions");
-
+const {canScanTicket} = require("../middleware/scanPermission");
 const {
   getAllEvents,
   getEventById,
@@ -33,7 +33,7 @@ router.post("/", protect, createEvent);
    BOOKINGS & SCAN (ADMIN + OWNER)
 ===================== */
 router.get("/:id/bookings", protect, eventOwnerOrAdmin, getEventBookings);
-router.post("/:id/scan", protect, eventOwnerOrAdmin, scanQrCheckIn);
+router.post("/:id/scan", protect, canScanTicket, scanQrCheckIn);
 
 /* =====================
    EDIT / DELETE (ADMIN + OWNER)

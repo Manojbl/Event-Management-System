@@ -50,36 +50,41 @@ const mongoose = require("mongoose");
 exports.scanQrCheckIn = async (req, res) => {
   try {
     let { bookingId } = req.body;
+    const eventId = req.params.id;
 
-    // 1️⃣ Handle QR containing JSON
+    // QR may contain JSON
     if (typeof bookingId === "string" && bookingId.startsWith("{")) {
       bookingId = JSON.parse(bookingId).bookingId;
     }
 
-    // 2️⃣ Validate bookingId
-    if (!bookingId || !mongoose.Types.ObjectId.isValid(bookingId)) {
+    if (!bookingId || bookingId.length !== 24) {
       return res.status(400).json({ message: "Invalid QR code" });
     }
 
-    // 3️⃣ Find booking
     const booking = await Booking.findById(bookingId).populate("event");
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    // 4️⃣ Prevent reuse
+    // 🔥 CRITICAL FIX — event ownership validation
+    if (booking.event._id.toString() !== eventId) {
+      return res
+        .status(403)
+        .json({ message: "Ticket does not belong to this event" });
+    }
+
     if (booking.checkedIn) {
       return res.status(400).json({ message: "Ticket already used" });
     }
 
-    // 5️⃣ Mark check-in
     booking.checkedIn = true;
     booking.status = "checked-in";
     booking.checkedInAt = new Date();
     await booking.save();
 
     res.json({ message: "✅ Entry allowed" });
+
   } catch (err) {
     console.error("SCAN ERROR:", err);
     res.status(500).json({ message: "QR scan failed" });
